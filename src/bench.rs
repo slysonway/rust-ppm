@@ -46,3 +46,24 @@ fn bench_string_to_number8(b: &mut Bencher) {
   s = "1 23 45".to_string();
   b.iter(|| string_to_number8(&s));
 }
+
+// Bench image
+#[bench]
+fn bench_invert_image(b: &mut Bencher) {
+    let mut p: Vec<Pixel> = Vec::new();
+    for _i in 0..6 {
+        p.push(Pixel::new(0, 100, 200));
+    }
+    let i:Image = Image::new(p, 3, 2);
+    b.iter(|| Image::invert(&i));
+}
+
+#[bench]
+fn bench_grayscale_image(b: &mut Bencher) {
+  let mut p: Vec<Pixel> = Vec::new();
+    for _i in 0..6 {
+        p.push(Pixel::new(30, 128, 255));
+    }
+    let mut im:Image = Image::new(p, 3, 2);
+    b.iter(|| Image::grayscale(&im));
+}

@@ -1,9 +1,13 @@
+#![feature(test)]
+
+#[cfg(test)]
+mod bench;
+
 use std::ops::Not;
 use std::io::BufReader;
 use std::path::Path;
 use std::fs::File;
 use std::io::prelude::*;
-
 
 #[no_mangle]
 pub extern fn dummy() -> i8 {

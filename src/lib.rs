@@ -3,6 +3,8 @@
 #[cfg(test)]
 mod bench;
 
+mod tests;
+
 use std::ops::Not;
 use std::io::BufReader;
 use std::path::Path;

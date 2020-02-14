@@ -175,6 +175,19 @@ impl Image {
         }
     }
 
+    pub fn eq(&self, other: Image) -> bool {
+        if self.height != other.height {
+            return false;
+        }
+        if self.width != other.width {
+            return false;
+        }
+        if self.buffer != other.buffer {
+            return false;
+        }
+        return true;
+    }
+
     /// Invert the Colors of an Image using c.not()
     /// to invert each color of a pixel
     /// 

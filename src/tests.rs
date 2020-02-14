@@ -37,26 +37,36 @@ fn test_equity(){
 }
 
 #[test]
-fn test_invert() {
+fn an_image_inverted_equals_its_opposite() {
+    let mut c: Vec<Pixel> = Vec::new();
+    for _i in 0..6 {
+        c.push(Pixel::new(255, 255, 255));
+    }
+    let i:Image = Image::new(c, 3, 2);
 
-    let mut p = Pixel{r:3, g:2, b:1};
+    let mut c2: Vec<Pixel> = Vec::new();
+    for _i in 0..6 {
+        c2.push(Pixel::new(0, 0, 0));
+    }
+    let i2:Image = Image::new(c2, 3, 2);
 
-    let p1 = Pixel{r:252, g:253, b:254};
-
-    Pixel::invert(&mut p);
-
-    assert_eq!(p, p1);
-
+    assert_eq!(true, i.eq(Image::invert(&i2)));
 }
 
 #[test]
-fn test_grayscale(){
+fn rgb_image_to_grayscale_image_work() {
+    let mut c: Vec<Pixel> = Vec::new();
+    for _i in 0..6 {
+        c.push(Pixel::new(30, 128, 255));
+    }
+    let mut im:Image = Image::new(c, 3, 2);
+    im = Image::grayscale(&im);
 
-    let mut p = Pixel{r:254, g:156, b:10};
+    let mut c2: Vec<Pixel> = Vec::new();
+    for _i in 0..6 {
+        c2.push(Pixel::new(137, 137, 137));
+    }
+    let im2:Image = Image::new(c2, 3, 2);
 
-    let p1 = Pixel{r:140, g:140, b:140};
-
-    Pixel::grayscale(&mut p);
-
-    assert_eq!(p, p1);        
+    assert_eq!(true, im.eq(im2));
 }

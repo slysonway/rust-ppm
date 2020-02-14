@@ -237,7 +237,6 @@ pub fn new_with_file(filename: &Path) -> Option<Image> {
                 let pixel = string_to_number8(&line);
                 if pixel.len() == 3 {
                     let p = Pixel::new(pixel[0], pixel[1], pixel[2]);
-                    println!("{}", p.display());
                     buffer.push(p);
                 }
             }

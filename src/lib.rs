@@ -21,10 +21,10 @@ pub extern fn dummy() -> i8 {
     42
 }
 
-// #[no_mangle]
-// pub extern fn times(x: i8, y: i8) -> i8 {
-//     x * y
-// }
+#[no_mangle]
+pub extern fn times(x: i8, y: i8) -> i8 {
+    x * y
+}
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 /// A Pixel is represented here by three colors, each of them are u8.

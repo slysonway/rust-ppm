@@ -1,3 +1,8 @@
+// This crate is a library
+#![crate_type = "lib"]
+// This crate is named "ppm"
+#![crate_name = "ppm"]
+
 #![feature(test)]
 
 #[cfg(test)]
@@ -16,14 +21,14 @@ pub extern fn dummy() -> i8 {
     42
 }
 
-#[no_mangle]
-pub extern fn times(x: i8, y: i8) -> i8 {
-    x * y
-}
+// #[no_mangle]
+// pub extern fn times(x: i8, y: i8) -> i8 {
+//     x * y
+// }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 /// A Pixel is represented here by three colors, each of them are u8.
-struct Pixel {
+pub struct Pixel {
     r: u8,
     g: u8,
     b: u8
@@ -34,22 +39,22 @@ struct Pixel {
 impl Pixel {
     /// Constructor
     #[no_mangle]
-    fn new(red: u8, green: u8, blue: u8) -> Self {
+    pub fn new(red: u8, green: u8, blue: u8) -> Self {
         Pixel{r: red, g: green, b: blue}
     }
 
     /// Red getter
-    fn red(&self) -> u8 {
+    pub fn red(&self) -> u8 {
         self.r
     }
 
     /// Green getter
-    fn green(&self) -> u8 {
+    pub fn green(&self) -> u8 {
         self.g
     }
 
     /// Blue getter
-    fn blue(&self) -> u8 {
+    pub fn blue(&self) -> u8 {
         self.b
     }
 
@@ -63,7 +68,7 @@ impl Pixel {
     /// # Return
     /// * `String`- Print value RVB
     #[no_mangle]
-    fn display(&self) -> String {
+    pub fn display(&self) -> String {
         format!("r: {}, g {}, b: {}", self.r, self.g, self.b)
     }
     
@@ -79,7 +84,7 @@ impl Pixel {
     /// # Example
     /// If a Pixel(30, 28, 255) is passed as a parameter 
     /// the function will return 104.
-    fn grayscale(&self) -> u8 {
+    pub fn grayscale(&self) -> u8 {
         let average: u32 = (self.r as u32 + self.g as u32 + self.b as u32) / 3;
         average as u8
     }  
@@ -127,7 +132,7 @@ impl Not for Pixel {
 
 #[derive(Debug)]
 /// An image is defined with a width, a height and a buffer containing all pixels.
-struct Image {
+pub struct Image {
     buffer: Vec<Pixel>,
     width: u32,
     height: u32
@@ -136,22 +141,22 @@ struct Image {
 /// Used to call Image's functions
 impl Image {
     /// Constructor
-    fn new(buffer: Vec<Pixel>, height: u32, width: u32) -> Image {
+    pub fn new(buffer: Vec<Pixel>, height: u32, width: u32) -> Image {
         Image{buffer: buffer, height: height, width: width}
     }
 
     /// Width getter
-    fn width(&self) -> u32 {
+    pub fn width(&self) -> u32 {
         self.width
     }
 
     /// Height getter
-    fn height(&self) -> u32 {
+    pub fn height(&self) -> u32 {
         self.height
     }
 
     /// Buffer getter
-    fn buffer(&self) -> &Vec<Pixel> {
+    pub fn buffer(&self) -> &Vec<Pixel> {
         &self.buffer
     }
 
@@ -160,7 +165,7 @@ impl Image {
     /// # Arguments
     /// * `self` - Image to be save
     /// * `filename: &Path` - path to save image
-    fn save(&self, filename: &Path) {
+    pub fn save(&self, filename: &Path) {
         let mut file = File::create(filename).expect("Cannot create the file");
         file.write_all(b"P3\n").expect("Cannot write P3");
         file.write_fmt(format_args!("{} {}\n", self.width, self.height)).expect("Cannot write width, height");
@@ -169,6 +174,41 @@ impl Image {
             file.write_fmt(format_args!("{} {} {}\n", p.r, p.g, p.b)).expect("Cannot write pixels");
         }
     }
+
+    /// Invert the Colors of an Image using c.not()
+    /// to invert each color of a pixel
+    /// 
+    /// # Arguments
+    /// * image: Image - the image to be inverted
+    /// # Return
+    /// * Image - the image inverted
+    pub fn invert(image: &Image) -> Image {
+        let mut inv: Vec<Pixel> = Vec::new();
+        for c in &image.buffer {
+            inv.push(c.not());
+        }
+
+        return Image::new(inv, image.height, image.width);
+    }
+    
+    /// Return a grayscale Image from a RGB Image.
+    /// Each pixel of the grayscale Image is the sum of the RGB pixel / 3.
+    /// 
+    /// # Arguments
+    /// * image:Image - The RGB Image to be converted
+    /// # Return
+    /// * Image - The grayscale Image converted
+    pub fn grayscale(image: &Image) -> Image {
+        let mut gray: Vec<Pixel> = Vec::new(); 
+
+        for i in &image.buffer {
+            let c: u8 = Pixel::grayscale(i);
+            gray.push(Pixel::new(c, c, c));
+        }
+
+        return Image::new(gray, image.height, image.width);
+    }
+
 }
 
 /// Create a new Image from a .ppm File
@@ -178,7 +218,7 @@ impl Image {
 /// # Return
 /// * Image - The Image created through the file read.
 #[no_mangle]
-fn new_with_file(filename: &Path) -> Image {
+pub fn new_with_file(filename: &Path) -> Option<Image> {
     let file = File::open(filename).expect("File cannot be open");
     let bufReader = BufReader::new(file);
     let mut height: u32 = 0;
@@ -192,16 +232,18 @@ fn new_with_file(filename: &Path) -> Image {
             width = size[0];
             height = size[1];
         } else {
-            let line = &line.unwrap();
-            if line.chars().next().unwrap() != '#' || i > 2 {
+            let line: &String = &line.unwrap();
+            if line.chars().next().unwrap() != '#' || i != 2 {
                 let pixel = string_to_number8(&line);
-                if buffer.len() == 3 {
-                    buffer.push(Pixel::new(pixel[0], pixel[1], pixel[2]));
+                if pixel.len() == 3 {
+                    let p = Pixel::new(pixel[0], pixel[1], pixel[2]);
+                    println!("{}", p.display());
+                    buffer.push(p);
                 }
             }
         }
     }
-    Image::new(buffer, height, width)
+   Some(Image::new(buffer, height, width))
 }
 
 /// Transform a String with numbers to number 
@@ -214,7 +256,7 @@ fn new_with_file(filename: &Path) -> Image {
 /// # Example :
 /// * "1 23 45" passed as parameters will return Vec{1, 23, 45}. 
 /// * "1 23 azer //& &é45" passed as parameters will return Vec{1, 23, 45}
-fn string_to_number32(line: &String) -> Vec<u32> {
+pub fn string_to_number32(line: &String) -> Vec<u32> {
     let mut size: Vec<u32> = Vec::new();
     let mut n = String::new();
     for c in line.chars() {
@@ -244,7 +286,7 @@ fn string_to_number32(line: &String) -> Vec<u32> {
 /// # Example :
 /// * "1 23 45" passed as parameters will return Vec{1, 23, 45}. 
 /// * "1 23 azer //& &é45" passed as parameters will return Vec{1, 23, 45}
-fn string_to_number8(line: &String) -> Vec<u8> {
+pub fn string_to_number8(line: &String) -> Vec<u8> {
     let mut size: Vec<u8> = Vec::new();
     let mut n = String::new();
     for c in line.chars() {
